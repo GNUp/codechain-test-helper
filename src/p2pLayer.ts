@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { Session, PORT } from "./session";
 import {
+    Message,
     MessageType,
     SignedMessage,
     HandshakeMessage,
@@ -31,6 +32,7 @@ export class P2pLayer {
     private session: Session;
     private socket: any;
     private allowedFinish: boolean;
+    private arrivedExtensionMessage: Array<Message>;
 
     constructor(ip: string, port: number) {
         this.session = new Session(ip, port);
@@ -38,6 +40,15 @@ export class P2pLayer {
         this.ip = ip;
         this.port = port;
         this.allowedFinish = false;
+        this.arrivedExtensionMessage = [];
+    }
+
+    getRecenExtensiontMessage(): Message {
+        return this.arrivedExtensionMessage.pop();
+    }
+
+    getArrivedExtensionMessage(): Array<Message> {
+        return this.arrivedExtensionMessage;
     }
 
     async connect(): Promise<{}> {
@@ -211,10 +222,12 @@ export class P2pLayer {
             }
             case MessageType.ENCRYPTED_ID: {
                 console.log("Got ENCRYPTED_ID message");
+                this.arrivedExtensionMessage.push(msg);
                 break;
             }
             case MessageType.UNENCRYPTED_ID: {
                 console.log("Got UNENCRYPTED_ID message");
+                this.arrivedExtensionMessage.push(msg);
                 break;
             }
             default:
